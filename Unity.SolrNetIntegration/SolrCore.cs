@@ -12,18 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using HttpWebAdapters;
 using System;
 
-namespace Unity.SolrNetIntegration {
-  internal class SolrCore {
-    public SolrCore(string id, Type documentType, string url) {
-      Id = id;
-      DocumentType = documentType;
-      Url = url;
-    }
+namespace Unity.SolrNetIntegration
+{
+    internal class SolrCore
+    {
+        public SolrCore(string id, Type documentType, string url, IHttpWebRequestFactory httpWebRequestFactory)
+        {
+            Id = id;
+            DocumentType = documentType;
+            Url = url;
+            HttpWebRequestFactory = httpWebRequestFactory;
+        }
 
-    public string Id { get; private set; }
-    public Type DocumentType { get; private set; }
-    public string Url { get; private set; }
-  }
+        public string Id { get; private set; }
+        public Type DocumentType { get; private set; }
+        public string Url { get; private set; }
+        public IHttpWebRequestFactory HttpWebRequestFactory { get; private set; }
+    }
 }

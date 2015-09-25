@@ -46,10 +46,15 @@
     <Compile Include="Config\SolrServerElement.cs" />
     <Compile Include="Config\SolrServers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SolrConnectionWrapper.cs" />
     <Compile Include="SolrCore.cs" />
     <Compile Include="SolrNetContainerConfiguration.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\HttpWebAdapters\HttpWebAdapters.csproj">
+      <Project>{ae7d2a46-3f67-4986-b04b-7dce79a549a5}</Project>
+      <Name>HttpWebAdapters</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SolrNet\SolrNet.csproj">
       <Project>{CEEB8690-3E08-4440-B647-787A58E71CFA}</Project>
       <Name>SolrNet</Name>

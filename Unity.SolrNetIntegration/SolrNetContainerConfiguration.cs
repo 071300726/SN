@@ -19,6 +19,7 @@ using SolrNet.Mapping.Validation.Rules;
 using SolrNet.Schema;
 using SolrNet.Utils;
 using Unity.SolrNetIntegration.Config;
+using HttpWebAdapters;
 
 namespace Unity.SolrNetIntegration {
     public class SolrNetContainerConfiguration {
@@ -76,7 +77,7 @@ namespace Unity.SolrNetIntegration {
 
         private void RegisterCore(SolrCore core, IUnityContainer container) {
             string connectionId = GetCoreConnectionId(core.Id);
-            container.RegisterType<ISolrConnection, SolrConnection>(connectionId, new InjectionConstructor(core.Url));
+            container.RegisterType<ISolrConnection, SolrConnectionWrapper>(connectionId, new InjectionConstructor(core.Url, core.HttpWebRequestFactory));
             if (!container.IsRegistered(typeof (ISolrOperations<>).MakeGenericType(core.DocumentType))) {
                 RegisterAll(core, container, isNamed : false);
             }
@@ -141,7 +142,7 @@ namespace Unity.SolrNetIntegration {
         }
 
         private static string GetCoreConnectionId(string coreId) {
-            return coreId + typeof (SolrConnection);
+            return coreId + typeof(SolrConnectionWrapper);
         }
 
         private void AddCoresFromConfig(IEnumerable<SolrServerElement> solrServers, IUnityContainer container) {
@@ -161,7 +162,18 @@ namespace Unity.SolrNetIntegration {
             var documentType = GetCoreDocumentType(server);
             var coreUrl = GetCoreUrl(server);
             UriValidator.ValidateHTTP(coreUrl);
-            return new SolrCore(id, documentType, coreUrl);
+
+            IHttpWebRequestFactory httpWebRequestFactory;
+            if (string.IsNullOrEmpty(server.Username))
+            {
+                httpWebRequestFactory = new HttpWebRequestFactory();
+            }
+            else
+            {
+                httpWebRequestFactory = new BasicAuthHttpWebRequestFactory(server.Username, server.Password);
+            }
+
+            return new SolrCore(id, documentType, coreUrl, httpWebRequestFactory);
         }
 
         private static string GetCoreUrl(SolrServerElement server) {
