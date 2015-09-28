@@ -29,6 +29,7 @@ namespace Unity.SolrNetIntegration {
             container.RegisterType(typeof (ISolrQueryExecuter<>), typeof (SolrQueryExecuter<>));
             container.RegisterType<ISolrDocumentPropertyVisitor, DefaultDocumentVisitor>();
             container.RegisterType<IMappingValidator, MappingValidator>();
+            container.RegisterType<ISolrQueryEndpointLocator, DefaultSolrQueryEndpointLocator>();
             RegisterParsers(container);
             RegisterValidationRules(container);
             RegisterSerializers(container);
@@ -73,6 +74,20 @@ namespace Unity.SolrNetIntegration {
             container.RegisterType<ISolrDIHStatusParser, SolrDIHStatusParser>();
             container.RegisterType<ISolrStatusResponseParser, SolrStatusResponseParser>();
             container.RegisterType<ISolrCoreAdmin, SolrCoreAdmin>();
+        }
+
+
+        private void RegisterCluster(IUnityContainer container, Type documentType, IList<SolrCore> cores)
+        {
+            var clusterType = typeof(SolrCluster<>).MakeGenericType(documentType);
+            var v = new InjectionConstructor(container, cores, new ResolvedParameter(typeof(ISolrQueryEndpointLocator)));
+            
+            container.RegisterType(clusterType, v);
+
+            foreach (var core in cores)
+            {
+                RegisterCore(core, container);
+            }
         }
 
         private void RegisterCore(SolrCore core, IUnityContainer container) {
@@ -150,12 +165,17 @@ namespace Unity.SolrNetIntegration {
                 return;
             }
 
-            var cores = solrServers.Select(GetCore);
+            var clusters = solrServers.Select(GetCore).GroupBy(c => c.DocumentType);
 
-            foreach (var core in cores) {
-                RegisterCore(core, container);
+
+            foreach (var cluster in clusters)
+            {
+                RegisterCluster(container, cluster.Key, cluster.ToList());
             }
         }
+
+
+
 
         private static SolrCore GetCore(SolrServerElement server) {
             var id = server.Id ?? Guid.NewGuid().ToString();

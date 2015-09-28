@@ -17,7 +17,7 @@ using System;
 
 namespace Unity.SolrNetIntegration
 {
-    internal class SolrCore
+    public class SolrCore
     {
         public SolrCore(string id, Type documentType, string url, IHttpWebRequestFactory httpWebRequestFactory)
         {
